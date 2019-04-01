@@ -1,0 +1,8 @@
+
+.idea/fileTemplates/code/
+.idea/fileTemplates/includes/
+.idea/fileTemplates/j2ee/
+.idea/workspace.xml
+node_modules/
+test.js
+test.json
