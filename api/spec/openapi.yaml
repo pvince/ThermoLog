@@ -1,0 +1,292 @@
+openapi: 3.0.2
+# Added by API Auto Mocking Plugin
+servers:
+  - description: Thermo Log API used for accessing data
+    url: /api/v1
+info:
+  description: This is a simple API
+  version: "1.0.0"
+  title: Simple Inventory API
+  contact:
+    email: you@your-company.com
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+tags:
+  - name: hubs
+    description: Information about hubs
+  - name: sensors
+    description: Information about sensors
+  - name: data
+    description: Information about data reported by sensors.
+paths:
+  /hubs:
+    get:
+      tags:
+        - hubs
+      summary: Acurite smartHUBs reporting to logger
+      description: This returns all Acurite smartHUBs that have reported data to the logger.
+      operationId: getHubs
+      x-exegesis-controller: hubs.ctrl
+      responses:
+        '200':
+          $ref: "#/components/responses/GetHubsResponse"
+  /hubs/{hubID}:
+    get:
+      tags:
+        - hubs
+      summary: A specific acurite smartHUB reporting to the logger
+      description: Returns metadata about a specific Acurite smartHUB that is reporting data to he logger.
+      operationId: getHubByID
+      x-exegesis-controller: hubs.ctrl
+      parameters:
+        - $ref: "#/components/parameters/hubID"
+      responses:
+        '200':
+          $ref: '#/components/responses/GetHubResponse'
+    put:
+      tags:
+        - hubs
+      summary: Update metadata about a specific smartHUB reporting to the logger.
+      description: Allows the caller to update metadata about a specific smartHUB that is reporting data to the logger
+      operationId: updateHubByID
+      x-exegesis-controller: hubs.ctrl
+      parameters:
+        - $ref: "#/components/parameters/hubID"
+      requestBody:
+        $ref: "#/components/requestBodies/HubBody"
+      responses:
+        '200':
+          $ref: '#/components/responses/GetHubResponse'
+  /sensors:
+    get:
+      tags:
+        - sensors
+      summary: Sensors that are reporting data
+      description: This returns all sensors that are reporting data to the smartHUB. Sensors can have their names changed.
+      operationId: getSensors
+      x-exegesis-controller: sensors.ctrl
+      responses:
+        '200':
+          $ref: "#/components/responses/GetSensorsResponse"
+  /sensors/{sensorID}:
+    get:
+      tags:
+        - sensors
+      summary: Information about a specific sensor
+      description: Returns information about a specific sensor.
+      operationId: getSensorByID
+      x-exegesis-controller: sensors.ctrl
+      parameters:
+        - $ref: "#/components/parameters/sensorID"
+      responses:
+        '200':
+          $ref: "#/components/responses/GetSensorResponse"
+    put:
+      tags:
+        - sensors
+      summary: Update metadata about a specific sensor
+      description: Allows the caller to update metadata about a specific sensor.
+      operationId: updateSensorByID
+      x-exegesis-controller: sensors.ctrl
+      parameters:
+        - $ref: "#/components/parameters/sensorID"
+      requestBody:
+        $ref: "#/components/requestBodies/SensorBody"
+      responses:
+        '200':
+          $ref: '#/components/responses/GetSensorResponse'
+  /reports/{sensorID}:
+    get:
+      tags:
+        - reports
+      summary: Returns reported data for a sensor.
+      description: Returns reported data for a sensor.
+      operationId: getReportsBySensor
+      x-exegesis-controller: reports.ctrl
+      parameters:
+        - $ref: "#/components/parameters/sensorID"
+      responses:
+        '200':
+          $ref: "#/components/responses/GetReportsResponse"
+
+components:
+  schemas:
+    HubID:
+      description: This is the ID of the smartHUB, it is used to uniquely identify the hub.
+      readOnly: true
+      minLength: 12
+      maxLength: 12
+      type: string
+      example: 24B75E09D821
+    SensorID:
+      description: This is the ID of the sensor. It is used to uniquely identify the sensor in the system. It is technically
+        possible for two Accurite sensors to have the same ID. If this happens, both sensors will be logged as one sensor.
+      type: string
+      minLength: 1
+      maxLength: 8
+      example: "00009301"
+    ReportID:
+      description: This is a unique identifier for a report from a sensor.
+      type: string
+      format: uuid
+    Hub:
+      description: Represents a hub that is sending data to the logger.
+      properties:
+        id:
+          $ref: "#/components/schemas/HubID"
+        name:
+          description: If this is a 'known' hub, this is the name assigned to it.
+          type: string
+          example: Home smartHUB
+        sensors:
+          description: Array of sensorIDs that have reported to this hub.
+          type: array
+          readOnly: true
+          items:
+            $ref: "#/components/schemas/SensorID"
+    SensorHub:
+      description: Read only information from the hub about a particular sensor.
+      readOnly: true
+      properties:
+        id:
+          $ref: "#/components/schemas/HubID"
+        signal:
+          description: Signal strength that the hub reports about a particular sensor. The lower the number, the lower
+            the signal strength.
+          type: number
+          minimum: 1
+          maximum: 4
+    SensorTypes:
+      description: Various different types of Accurite sensors can report data to a hub, depending on the type
+        of sensor, the type of reported data varies. This not an exhaustive list, but only includes sensors I have
+        defin
+      readOnly: true
+      type: string
+      enum:
+        - fiveInOne
+        - tower
+        - proIn
+    Sensor:
+      description: Represents a sensor that has had had data sent to the logger via a hub.
+      properties:
+        id:
+          $ref: "#/components/schemas/SensorID"
+        hubs:
+          description: Hubs that have reported data for this sensor. Hubs are 'dumb' and report all data they receive.
+            If multiple hubs recieve data for a sensor, both will report it.
+          type: array
+          readOnly: true
+          items:
+            $ref: "#/components/schemas/SensorHub"
+        name:
+          description: This is a friendly, identifying name stored in this logging system used to easily reference this sensor.
+            New sensors will have no name. It is recommended you give names to sensors.
+          type: string
+          example: Living Room
+        battery:
+          description: Battery life remaining for this sensor. Currently appears to always be "normal"
+          type: string
+          enum:
+            - low
+            - normal
+          readOnly: true
+        type:
+          $ref: "#/components/schemas/SensorTypes"
+    SensorReport:
+      description: Represents a single 'report' from a sensor.
+      readOnly: true
+      properties:
+        hubID:
+          $ref: "#/components/schemas/HubID"
+        sensorID:
+          $ref: "#/components/schemas/SensorID"
+        date:
+          description: Date and time that the report was received by the logging system.
+          type: string
+          format: 'date-time'
+        temperature:
+          description: Temperature in fahrenheit
+          type: number
+          format: float
+          example: 30.3
+        humidity:
+          description: Percent humidity. Marking this as a float just in case, but it appears to always be whole numbers
+          type: number
+          format: float
+          example: 81
+        barometric:
+          description: Barometric pressure.
+          type: number
+          format: float
+          example: 30.17
+
+  parameters:
+    hubID:
+      name: hubID
+      in: path
+      description: ID of a hub
+      required: true
+      schema:
+        $ref: "#/components/schemas/HubID"
+    sensorID:
+      name: sensorID
+      in: path
+      description: ID of a sensor
+      required: true
+      schema:
+        $ref: "#/components/schemas/SensorID"
+
+  requestBodies:
+    HubBody:
+      description: A hub that is being updated
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Hub"
+    SensorBody:
+      description: A Sensor that is being updated
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Sensor"
+
+  responses:
+    GetHubsResponse:
+      description: Returns a list of all hubs that have reported data.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/Hub"
+    GetHubResponse:
+      description: Returns a single hub.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Hub"
+    GetSensorsResponse:
+      description: Returns a list of all sensors that have reported data.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/Sensor"
+    GetSensorResponse:
+      description: Returns a single sensor
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Sensor"
+    GetReportsResponse:
+      description: Returns data reported by a sensor
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/SensorReport"

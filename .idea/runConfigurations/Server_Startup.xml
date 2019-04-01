@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Server Startup" type="NodeJSConfigurationType" path-to-js-file="bin/server.js" working-dir="$PROJECT_DIR$">
+    <envs>
+      <env name="DEBUG" value="thermo*" />
+    </envs>
+    <EXTENSION ID="com.jetbrains.nodejs.run.NodeJSStartBrowserRunConfigurationExtension">
+      <browser start="true" url="http://localhost:3000" />
+    </EXTENSION>
+    <method v="2" />
+  </configuration>
+</component>

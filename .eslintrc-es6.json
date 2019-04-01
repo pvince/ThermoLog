@@ -1,0 +1,14 @@
+{
+  "rules": {
+    "no-use-before-define": [ "error", "nofunc" ],
+    "arrow-body-style": [ "error", "as-needed" ],
+    "arrow-parens": [ "error" ],
+    "no-confusing-arrow": [ "error", { "allowParens": true } ],
+    "no-duplicate-imports": [ "error" ],
+    "no-useless-constructor": [ "error" ],
+    "no-var": [ "error" ],
+
+    "prefer-arrow-callback": [ "error" ],
+    "prefer-const": [ "error", { "destructuring": "all" } ]
+  }
+} 
