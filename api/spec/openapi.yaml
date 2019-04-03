@@ -167,6 +167,14 @@ components:
         - fiveInOne
         - tower
         - proIn
+    SensorSubTypes:
+      description: Some sensors (such as 5-in-1) make multiple reports with different sub-sets of data, each data
+        sub-set is associated with a 'sub-type' of the sensor.
+      readOnly: true
+      type: string
+      enum:
+        - 5N1x38
+        - 5n1x31
     Sensor:
       description: Represents a sensor that has had had data sent to the logger via a hub.
       properties:
@@ -193,6 +201,10 @@ components:
           readOnly: true
         type:
           $ref: "#/components/schemas/SensorTypes"
+        subTypes:
+          type: array
+          items:
+            $ref: "#/components/schemas/SensorSubTypes"
     SensorReport:
       description: Represents a single 'report' from a sensor.
       readOnly: true

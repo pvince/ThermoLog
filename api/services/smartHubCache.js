@@ -57,6 +57,8 @@ const eventLog = {};
  * @property {string} tempf - Temperature
  * @property {string} humidity - Humidity
  * @property {string} sensor - Sensor ID
+ * @property {string} battery - normal // low
+ * @property {string} rssi - Signal strength, 1-4
  */
 
 /**
@@ -166,10 +168,7 @@ function logWeatherStationUpdate(update) {
 
   // Figure out the sensor information
   const curSensor = _getOrCreateSensor(update.sensor);
-  if (_.isEmpty(curSensor.sensorType)) {
-    curSensor.sensorType = update.mt;
-    curSensor.hubID = update.id;
-  }
+  curSensor.setBattery(update.battery).setHub(update.id, update.rssi).updateSubTypes(update.mt);
 
   //date, hubID, sensorID, temperature, humidity, barometric
   // Log the event
