@@ -8,8 +8,7 @@
 
 // Our modules
 const {Hub} = require('../../models/hub');
-const {Sensor} = require('../../models/sensor');
-const {Event} = require('../../models/event');
+const {CreateSensor} = require('../../models/sensor');
 
 // Third party modules
 const _ = require('lodash');
@@ -46,20 +45,6 @@ const hubCache = {};
  * @type {EventLog}
  */
 const eventLog = {};
-
-/**
- * @typedef {object} WeatherStationUpdate
- * @property {string} dateutc - Always now?
- * @property {string} action - Always 'updateraw'?
- * @property {string} realtime - Always 1?
- * @property {string} id - HubID
- * @property {string} mt - Sensor type
- * @property {string} tempf - Temperature
- * @property {string} humidity - Humidity
- * @property {string} sensor - Sensor ID
- * @property {string} battery - normal // low
- * @property {string} rssi - Signal strength, 1-4
- */
 
 /**
  * Retrieves a hub from cache based on the Hub ID. If a hub is not found, it constructs a default one.
@@ -99,11 +84,12 @@ function getSensor(id) {
 
 /**
  * @param {string} id - Sensor ID
+ * @param {string} type - Sensor type
  * @return {Sensor} - Returns a sensor with that ID.
  * @private
  */
-function _getOrCreateSensor(id) {
-  return getSensor(id) || new Sensor('', id, '');
+function _getOrCreateSensor(id, type) {
+  return getSensor(id) || CreateSensor(type).setID(id);
 }
 
 /**
@@ -160,19 +146,18 @@ function getSensors() {
 
 /**
  *
- * @param {WeatherStationUpdate} update - Update data
+ * @param {CommonWeatherUpdate} update - Update data
  */
 function logWeatherStationUpdate(update) {
   // Retrieve the current hub this update was from.
   const curHub = _getOrCreateHub(update.id);
 
   // Figure out the sensor information
-  const curSensor = _getOrCreateSensor(update.sensor);
-  curSensor.setBattery(update.battery).setHub(update.id, update.rssi).updateSubTypes(update.mt);
+  const curSensor = _getOrCreateSensor(update.sensor, update.mt).initFromWeatherUpdate(update);
 
   //date, hubID, sensorID, temperature, humidity, barometric
   // Log the event
-  addEvent(new Event(new Date(), curHub.id, curSensor.id, parseFloat(update.tempf), parseFloat(update.humidity), parseFloat(update.baromin)));
+  addEvent(curSensor.initReportFromWeatherUpdate(update));
 
   updateHub(curHub);
   updateSensor(curSensor);

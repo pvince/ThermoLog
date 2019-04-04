@@ -7,6 +7,7 @@
 // NodeJS modules
 
 // Our modules
+const { Event } = require('./event');
 
 // Third party modules
 const _ = require('lodash');
@@ -28,6 +29,49 @@ const SensorTypes = {
 Object.freeze(SensorTypes);
 
 /**
+ * @typedef {object} CommonWeatherUpdate
+ * @property {string} dateutc - Always now?
+ * @property {string} action - Always 'updateraw'?
+ * @property {string} realtime - Always 1?
+ * @property {string} id - HubID
+ * @property {string} mt - Sensor type
+ * @property {string} sensor - Sensor ID
+ * @property {string} battery - normal // low
+ * @property {string} baromin - baromin, ex: 30.17
+ * @property {string} rssi - Signal strength, 1-4
+ */
+
+/**
+ * @typedef {CommonWeatherUpdate} TowerWeatherUpdate
+ * @property {string} tempf - Temperature, ex: 40.2
+ * @property {string} humidity - Humidity, ex: 54
+ */
+
+/**
+ * @typedef {CommonWeatherUpdate} ProInWeatherUpdate
+ * @property {string} indoortempf - Temperature, ex: 40.2
+ * @property {string} indoorhumidity - Humidity, ex: 54
+ * @property {string} probe - Equals 1?
+ * @property {string} check - Equals 0?
+ * @property {string} water - Equals 0 or 1
+ */
+
+/**
+ * @typedef {CommonWeatherUpdate} FiveInOne38WeatherUpdate
+ * @property {string} tempf - Temperature, ex: 40.2
+ * @property {string} humidity - Humidity, ex: 54
+ * @property {string} windspeedmph - Wind speed mph
+ */
+
+/**
+ * @typedef {CommonWeatherUpdate} FiveInOne31WeatherUpdate
+ * @property {string} windspeedmph - Wind speed mph
+ * @property {string} winddir - Degrees, 0-360
+ * @property {string} rainin - 0.00
+ * @property {string} dailyrainin - 0.00
+ */
+
+/**
  * @typedef {object} SensorHub
  * @property {string} id - ID of the hub
  * @property {number} signal - Signal strength of the sensor at this hub.
@@ -39,9 +83,10 @@ Object.freeze(SensorTypes);
  */
 class Sensor {
   /**
+   * Static: Returns sensor type from the sub-type.
    *
-   * @param {string} sensorSubType
-   * @return {string}
+   * @param {string} sensorSubType - Sensor sub-type
+   * @return {string} - Returns the sensor type
    */
   static getSensorTypeFromSubtype(sensorSubType) {
     if ([SensorSubTypes.fiveInOne31, SensorSubTypes.fiveInOne38].includes(sensorSubType)) {
@@ -51,11 +96,34 @@ class Sensor {
   }
 
   /**
-   * @param {string} hubID - The Hub ID
-   * @param {string} id - The sensor ID
+   * Initializes this sensor
+   * @param {CommonWeatherUpdate} weatherUpdate - Sensor report received.
+   * @returns {Sensor} - Returns 'this' the initialized sensor.
    */
-  constructor(hubID, id) {
-    this.id = id;
+  initFromWeatherUpdate(weatherUpdate) {
+    this.id = weatherUpdate.sensor;
+    this.updateSubTypes(weatherUpdate.mt);
+    this.setHub(weatherUpdate.id, parseInt(weatherUpdate.rssi, 10));
+    this.setBattery(weatherUpdate.battery);
+
+    return this;
+  }
+
+  /**
+   * Base implementation for initializing a report.
+   *
+   * @param {CommonWeatherUpdate} weatherUpdate - Weather update object
+   * @returns {Event} - Returns a new event
+   */
+  initReportFromWeatherUpdate(weatherUpdate) {
+    return new Event(new Date(), weatherUpdate.id, weatherUpdate.sensor, 0, 0, 0);
+  }
+
+  /**
+   * Base constructor, use 'initFromReport'
+   */
+  constructor() {
+    this.id = '';
     this.type = '';
     /**
      * @type {string[]}
@@ -67,6 +135,15 @@ class Sensor {
      */
     this.hubs = [];
     this.battery = '';
+  }
+
+  /**
+   * @param {string} id - ID to set on the sensor
+   * @returns {Sensor} - Returns this.
+   */
+  setID(id) {
+    this.id = id;
+    return this;
   }
 
   /**
@@ -128,6 +205,81 @@ class Sensor {
   }
 }
 
+/**
+ * Specific implementation of a 'tower' sensor.
+ */
+class TowerSensor extends Sensor {
+  /**
+   * Base implementation for initializing a report.
+   *
+   * @param {TowerWeatherUpdate} weatherUpdate - Weather update object
+   * @returns {Event} - Returns a new event
+   */
+  initReportFromWeatherUpdate(weatherUpdate) {
+    return new Event(new Date(), weatherUpdate.id, weatherUpdate.sensor, parseFloat(weatherUpdate.tempf),
+      parseFloat(weatherUpdate.humidity), parseFloat(weatherUpdate.baromin));
+  }
+}
+
+/**
+ * Specific implementation of a 'Pro' sensor.
+ */
+class ProSensor extends Sensor {
+  /**
+   * Base implementation for initializing a report.
+   *
+   * @param {ProInWeatherUpdate} weatherUpdate - Weather update object
+   * @returns {Event} - Returns a new event
+   */
+  initReportFromWeatherUpdate(weatherUpdate) {
+    return new Event(new Date(), weatherUpdate.id, weatherUpdate.sensor, parseFloat(weatherUpdate.indoortempf),
+      parseFloat(weatherUpdate.indoorhumidity), parseFloat(weatherUpdate.baromin));
+  }
+}
+
+/**
+ * Specific implementation of a 'FiveInOne' sensor.
+ */
+class FiveInOneSensor extends Sensor {
+  /**
+   * Base implementation for initializing a report.
+   *
+   * @param {FiveInOne38WeatherUpdate|FiveInOne31WeatherUpdate} weatherUpdate - Weather update object
+   * @returns {Event} - Returns a new event
+   */
+  initReportFromWeatherUpdate(weatherUpdate) {
+    if (weatherUpdate.mt === SensorSubTypes.fiveInOne31) {
+      return new Event(new Date(), weatherUpdate.id, weatherUpdate.sensor, 0, 0, parseFloat(weatherUpdate.baromin));
+    } else {
+      return new Event(new Date(), weatherUpdate.id, weatherUpdate.sensor, parseFloat(weatherUpdate.tempf),
+        parseFloat(weatherUpdate.humidity), parseFloat(weatherUpdate.baromin));
+    }
+  }
+}
+
+/**
+ * Creates a sensor that matches the specified sub-type.
+ * @param {string} sensorSubType - Sub-type
+ * @returns {Sensor} - A new sensor of the appropriate type.
+ * @constructor
+ */
+function CreateSensor(sensorSubType) {
+  const sensorType = Sensor.getSensorTypeFromSubtype(sensorSubType);
+  if (sensorType === SensorTypes.tower) {
+    return new TowerSensor();
+  } else if (sensorType === SensorTypes.proIn) {
+    return new ProSensor();
+  } else if (sensorType === SensorTypes.fiveInOne) {
+    return new FiveInOneSensor();
+  } else {
+    return new Sensor();
+  }
+}
+
 module.exports = {
-  Sensor
+  Sensor,
+  TowerSensor,
+  ProSensor,
+  FiveInOneSensor,
+  CreateSensor
 };
