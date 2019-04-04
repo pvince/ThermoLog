@@ -1,5 +1,5 @@
 /**
- * @file //TODO_PTV: Update the description
+ * @file Central cache for all data that has been collected from smartHubs
  */
 
 'use strict';
@@ -150,7 +150,7 @@ function getSensors() {
  */
 function logWeatherStationUpdate(update) {
   // Retrieve the current hub this update was from.
-  const curHub = _getOrCreateHub(update.id);
+  const curHub = _getOrCreateHub(update.id).updateSensors(update.sensor);
 
   // Figure out the sensor information
   const curSensor = _getOrCreateSensor(update.sensor, update.mt).initFromWeatherUpdate(update);

@@ -1,5 +1,5 @@
 /**
- * @file //TODO_PTV: Update the description
+ * @file Data about hubs
  */
 
 'use strict';
@@ -11,7 +11,7 @@
 // Third party modules
 
 /**
- *
+ * Hub metadata
  */
 class Hub {
   /**
@@ -22,6 +22,17 @@ class Hub {
     this.name = name;
     this.id = id;
     this.sensors = [];
+  }
+
+  /**
+   * @param {string} sensorID - Sensor ID to ensure is part of this hub
+   * @returns {Hub} - Returns this.
+   */
+  updateSensors(sensorID) {
+    if (this.sensors.indexOf(sensorID) === -1) {
+      this.sensors.push(sensorID);
+    }
+    return this;
   }
 }
 
