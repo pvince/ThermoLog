@@ -175,6 +175,8 @@ components:
       enum:
         - 5N1x38
         - 5n1x31
+        - ProIn
+        - tower
     Sensor:
       description: Represents a sensor that has had had data sent to the logger via a hub.
       properties:
@@ -202,10 +204,12 @@ components:
         type:
           $ref: "#/components/schemas/SensorTypes"
         subTypes:
+          description: Some sensors are made of multiple sub-sensors. Each sub-sensor will report a sub-set of the data
+            this sensor is collecting. This lets you know if the report data for this sensor might appear a bit disjointed.
           type: array
           items:
             $ref: "#/components/schemas/SensorSubTypes"
-    SensorReport:
+    SensorReportBase:
       description: Represents a single 'report' from a sensor.
       readOnly: true
       properties:
@@ -217,21 +221,114 @@ components:
           description: Date and time that the report was received by the logging system.
           type: string
           format: 'date-time'
-        temperature:
-          description: Temperature in fahrenheit
-          type: number
-          format: float
-          example: 30.3
-        humidity:
-          description: Percent humidity. Marking this as a float just in case, but it appears to always be whole numbers
-          type: number
-          format: float
-          example: 81
         barometric:
           description: Barometric pressure.
           type: number
           format: float
           example: 30.17
+        type:
+          allOf:
+            - $ref: "#/components/schemas/SensorSubTypes"
+            - description: The specific type of sensor that made this report.
+    TowerSensorReport:
+      allOf:
+        - $ref: '#/components/schemas/SensorReportBase'
+        - properties:
+            type:
+              default: tower
+            temperature:
+              description: Temperature in fahrenheit
+              type: number
+              format: float
+              example: 30.3
+            humidity:
+              description: Percent humidity. Marking this as a float just in case, but it appears to always be whole numbers
+              type: number
+              format: float
+              example: 81
+    ProSensorReport:
+      allOf:
+        - $ref: "#/components/schemas/SensorReportBase"
+        - properties:
+            type:
+              default: ProIn
+            temperature:
+              description: Temperature in fahrenheit
+              type: number
+              format: float
+              example: 30.3
+            humidity:
+              description: Percent humidity. Marking this as a float just in case, but it appears to always be whole numbers
+              type: number
+              format: float
+              example: 81
+            waterIsPresent:
+              description: Is the water sensor currently detecting water?
+              type: boolean
+              example: false
+    FiveInOne31SensorReport:
+      allOf:
+        - $ref: "#/components/schemas/SensorReportBase"
+        - properties:
+            type:
+              default: 5n1x31
+            windSpeed:
+              description: Wind speed in MPH
+              type: number
+              format: int32
+              minimum: 0
+              example: 4
+            windDir:
+              description: Direction of the wind, assuming 0 degrees is North?
+              type: number
+              format: int32
+              minimum: 0
+              maximum: 360
+            rain:
+              description: Current rain fall total? in inches
+              type: number
+              format: float
+              example: 0.01
+            dailyRain:
+              description: Daily rain fall total? in inches
+              type: number
+              format: float
+              example: 1.76
+    FiveInOne38SensorReport:
+      allOf:
+        - $ref: "#/components/schemas/SensorReportBase"
+        - properties:
+            type:
+              default: 5n1x38
+            windSpeed:
+              description: Wind speed in MPH
+              type: number
+              format: int32
+              minimum: 0
+              example: 4
+            temperature:
+              description: Temperature in fahrenheit
+              type: number
+              format: float
+              example: 30.3
+            humidity:
+              description: Percent humidity. Marking this as a float just in case, but it appears to always be whole numbers
+              type: number
+              format: float
+              example: 81
+    SensorReport:
+      oneOf:
+        - $ref: "#/components/schemas/TowerSensorReport"
+        - $ref: "#/components/schemas/ProSensorReport"
+        - $ref: "#/components/schemas/FiveInOne31SensorReport"
+        - $ref: "#/components/schemas/FiveInOne38SensorReport"
+      discriminator:
+        propertyName: type
+        mapping:
+          5N1x38: "#/components/schemas/FiveInOne31SensorReport"
+          5n1x31: "#/components/schemas/FiveInOne38SensorReport"
+          ProIn: "#/components/schemas/ProSensorReport"
+          tower: "#/components/schemas/TowerSensorReport"
 
   parameters:
     hubID:

@@ -24,6 +24,7 @@ class Report {
     this.hubID = weatherUpdate.id;
     this.sensorID = weatherUpdate.sensor;
     this.barometric = parseFloat(weatherUpdate.baromin);
+    this.type = weatherUpdate.mt;
   }
 
   /**
@@ -88,6 +89,7 @@ class FiveInOneReport extends Report {
       this.setWindSpeed(weatherUpdate.windspeedmph);
       this.rain = parseFloat(weatherUpdate.rainin);
       this.dailyRain = parseFloat(weatherUpdate.dailyrainin);
+      this.windDir = parseInt(weatherUpdate.winddir, 10);
     } else {
       this.setTemperature(weatherUpdate.tempf);
       this.setHumidity(weatherUpdate.humidity);
