@@ -37,11 +37,11 @@ const hubCache = {};
 
 /**
  * @typedef {object} EventLog
- * @property {Object.<string, Event[]>}
+ * @property {Object.<string, Report[]>}
  */
 
 /**
- * Log of all events, organized by sensor. Sensor.id :: Event[]
+ * Log of all events, organized by sensor. Sensor.id :: Report[]
  * @type {EventLog}
  */
 const eventLog = {};
@@ -104,7 +104,7 @@ function updateSensor(sensor) {
 /**
  * Adds an event to the log.
  *
- * @param {Event} event - Event to add to the log.
+ * @param {Report} event - Report to add to the log.
  */
 function addEvent(event) {
   if (_.isNil(eventLog[event.sensorID])) {
@@ -127,7 +127,7 @@ function getHubs() {
 /**
  * Returns ALL events.
  * @param {string} sensorID - ID of the sensor to retrieve events for.
- * @return {Event[]} - Returns a copy of ALL events
+ * @return {Report[]} - Returns a copy of ALL events
  */
 function getEventsForSensor(sensorID) {
   return _.cloneDeep(_.get(eventLog, sensorID, null));

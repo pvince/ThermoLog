@@ -11,9 +11,9 @@
 // Third party modules
 
 /**
- * Event log object for a basic event.
+ * Report log object for a basic event.
  */
-class Event {
+class Report {
   /**
    *
    * @param {Date} date - Date the event occurred
@@ -34,5 +34,5 @@ class Event {
 }
 
 module.exports = {
-  Event
+  Report
 };

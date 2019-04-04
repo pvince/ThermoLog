@@ -7,7 +7,7 @@
 // NodeJS modules
 
 // Our modules
-const { Event } = require('./event');
+const { Report } = require('./report');
 
 // Third party modules
 const _ = require('lodash');
@@ -113,10 +113,10 @@ class Sensor {
    * Base implementation for initializing a report.
    *
    * @param {CommonWeatherUpdate} weatherUpdate - Weather update object
-   * @returns {Event} - Returns a new event
+   * @returns {Report} - Returns a new event
    */
   initReportFromWeatherUpdate(weatherUpdate) {
-    return new Event(new Date(), weatherUpdate.id, weatherUpdate.sensor, 0, 0, 0);
+    return new Report(new Date(), weatherUpdate.id, weatherUpdate.sensor, 0, 0, 0);
   }
 
   /**
@@ -213,10 +213,10 @@ class TowerSensor extends Sensor {
    * Base implementation for initializing a report.
    *
    * @param {TowerWeatherUpdate} weatherUpdate - Weather update object
-   * @returns {Event} - Returns a new event
+   * @returns {Report} - Returns a new event
    */
   initReportFromWeatherUpdate(weatherUpdate) {
-    return new Event(new Date(), weatherUpdate.id, weatherUpdate.sensor, parseFloat(weatherUpdate.tempf),
+    return new Report(new Date(), weatherUpdate.id, weatherUpdate.sensor, parseFloat(weatherUpdate.tempf),
       parseFloat(weatherUpdate.humidity), parseFloat(weatherUpdate.baromin));
   }
 }
@@ -229,10 +229,10 @@ class ProSensor extends Sensor {
    * Base implementation for initializing a report.
    *
    * @param {ProInWeatherUpdate} weatherUpdate - Weather update object
-   * @returns {Event} - Returns a new event
+   * @returns {Report} - Returns a new event
    */
   initReportFromWeatherUpdate(weatherUpdate) {
-    return new Event(new Date(), weatherUpdate.id, weatherUpdate.sensor, parseFloat(weatherUpdate.indoortempf),
+    return new Report(new Date(), weatherUpdate.id, weatherUpdate.sensor, parseFloat(weatherUpdate.indoortempf),
       parseFloat(weatherUpdate.indoorhumidity), parseFloat(weatherUpdate.baromin));
   }
 }
@@ -245,13 +245,13 @@ class FiveInOneSensor extends Sensor {
    * Base implementation for initializing a report.
    *
    * @param {FiveInOne38WeatherUpdate|FiveInOne31WeatherUpdate} weatherUpdate - Weather update object
-   * @returns {Event} - Returns a new event
+   * @returns {Report} - Returns a new event
    */
   initReportFromWeatherUpdate(weatherUpdate) {
     if (weatherUpdate.mt === SensorSubTypes.fiveInOne31) {
-      return new Event(new Date(), weatherUpdate.id, weatherUpdate.sensor, 0, 0, parseFloat(weatherUpdate.baromin));
+      return new Report(new Date(), weatherUpdate.id, weatherUpdate.sensor, 0, 0, parseFloat(weatherUpdate.baromin));
     } else {
-      return new Event(new Date(), weatherUpdate.id, weatherUpdate.sensor, parseFloat(weatherUpdate.tempf),
+      return new Report(new Date(), weatherUpdate.id, weatherUpdate.sensor, parseFloat(weatherUpdate.tempf),
         parseFloat(weatherUpdate.humidity), parseFloat(weatherUpdate.baromin));
     }
   }
