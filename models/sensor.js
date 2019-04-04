@@ -7,26 +7,11 @@
 // NodeJS modules
 
 // Our modules
-const { Report } = require('./report');
+const { Report, FiveInOneReport, ProReport, TowerReport } = require('./report');
+const {SensorTypes, SensorSubTypes} = require('./sensorTypes');
 
 // Third party modules
 const _ = require('lodash');
-
-const SensorSubTypes = {
-  tower: 'tower',
-  fiveInOne38: '5N1x38',
-  fiveInOne31: '5N1x31',
-  proIn: 'ProIn'
-};
-Object.freeze(SensorSubTypes);
-
-
-const SensorTypes = {
-  tower: 'tower',
-  fiveInOne: 'fiveInOne',
-  proIn: 'ProIn'
-};
-Object.freeze(SensorTypes);
 
 /**
  * @typedef {object} CommonWeatherUpdate
@@ -116,7 +101,7 @@ class Sensor {
    * @returns {Report} - Returns a new event
    */
   initReportFromWeatherUpdate(weatherUpdate) {
-    return new Report(new Date(), weatherUpdate.id, weatherUpdate.sensor, 0, 0, 0);
+    return new Report(weatherUpdate);
   }
 
   /**
@@ -213,11 +198,10 @@ class TowerSensor extends Sensor {
    * Base implementation for initializing a report.
    *
    * @param {TowerWeatherUpdate} weatherUpdate - Weather update object
-   * @returns {Report} - Returns a new event
+   * @returns {TowerReport} - Returns a new event
    */
   initReportFromWeatherUpdate(weatherUpdate) {
-    return new Report(new Date(), weatherUpdate.id, weatherUpdate.sensor, parseFloat(weatherUpdate.tempf),
-      parseFloat(weatherUpdate.humidity), parseFloat(weatherUpdate.baromin));
+    return new TowerReport(weatherUpdate);
   }
 }
 
@@ -229,11 +213,10 @@ class ProSensor extends Sensor {
    * Base implementation for initializing a report.
    *
    * @param {ProInWeatherUpdate} weatherUpdate - Weather update object
-   * @returns {Report} - Returns a new event
+   * @returns {ProReport} - Returns a new event
    */
   initReportFromWeatherUpdate(weatherUpdate) {
-    return new Report(new Date(), weatherUpdate.id, weatherUpdate.sensor, parseFloat(weatherUpdate.indoortempf),
-      parseFloat(weatherUpdate.indoorhumidity), parseFloat(weatherUpdate.baromin));
+    return new ProReport(weatherUpdate);
   }
 }
 
@@ -245,15 +228,10 @@ class FiveInOneSensor extends Sensor {
    * Base implementation for initializing a report.
    *
    * @param {FiveInOne38WeatherUpdate|FiveInOne31WeatherUpdate} weatherUpdate - Weather update object
-   * @returns {Report} - Returns a new event
+   * @returns {FiveInOneReport} - Returns a new event
    */
   initReportFromWeatherUpdate(weatherUpdate) {
-    if (weatherUpdate.mt === SensorSubTypes.fiveInOne31) {
-      return new Report(new Date(), weatherUpdate.id, weatherUpdate.sensor, 0, 0, parseFloat(weatherUpdate.baromin));
-    } else {
-      return new Report(new Date(), weatherUpdate.id, weatherUpdate.sensor, parseFloat(weatherUpdate.tempf),
-        parseFloat(weatherUpdate.humidity), parseFloat(weatherUpdate.baromin));
-    }
+    return new FiveInOneReport(weatherUpdate);
   }
 }
 
