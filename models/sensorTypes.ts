@@ -5,6 +5,7 @@
 // NodeJS modules
 
 // Our modules
+import _ from "lodash";
 
 // Third party modules
 
@@ -30,9 +31,9 @@ export enum SensorGeneralTypes {
  * @returns - Returns a SensorSpecificType
  */
 export function getSpecificTypeFromString(typeString: string): SensorSpecificTypes {
-  let typedString: keyof typeof SensorSpecificTypes;
-  typedString = typeString as keyof typeof  SensorSpecificTypes;
-  return SensorSpecificTypes[typedString];
+  const result = typeString as SensorSpecificTypes;
+
+  return result;
 }
 
 /**

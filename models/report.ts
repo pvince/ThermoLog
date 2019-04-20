@@ -11,7 +11,7 @@ import {
   getSpecificTypeFromString,
   SensorGeneralTypes,
   SensorSpecificTypes
-} from "./sensorTypes";
+} from './sensorTypes';
 
 import {
   ICommonWeatherUpdate,

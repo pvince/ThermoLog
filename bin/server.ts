@@ -1,7 +1,6 @@
 /**
  * @file SP_NOCHECKIN //TODO_PTV: Update the description
  */
-
 import app from "../app";
 
 import {registerExegesisMW} from "../api/api";

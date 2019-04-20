@@ -15,9 +15,9 @@
   },
   "include": [
     "app.ts",
-    "models/**/*",
-    "api/**/*",
-    "bin/**/*",
-    "services/**/*"
+    "models/**/*.ts",
+    "api/**/*.ts",
+    "bin/**/*.ts",
+    "services/**/*.ts"
   ]
 }

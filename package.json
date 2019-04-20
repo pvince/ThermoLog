@@ -5,10 +5,11 @@
   "main": "app.ts",
   "scripts": {
     "prebuild": "tslint -c tslint.json -p tsconfig.json",
-    "build": "tsc",
-    "prestart": "npm run build",
+    "build": "gulp",
+    "buildincremental": "npm run prebuild && gulp build",
+    "prestart": "npm run buildincremental",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "npm run build && node ./dist/bin/server.js"
+    "start": "node ./dist/bin/server.js"
   },
   "author": "",
   "license": "ISC",
@@ -33,6 +34,10 @@
     "@types/fs-extra": "^5.0.5",
     "@types/lodash": "^4.14.123",
     "@types/node": "^11.13.4",
+    "gulp": "^4.0.0",
+    "gulp-changed": "^3.2.0",
+    "gulp-print": "^5.0.2",
+    "gulp-typescript": "^5.0.1",
     "tslint": "^5.15.0",
     "typescript": "^3.4.3"
   }
